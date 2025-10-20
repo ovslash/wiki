@@ -1,0 +1,161 @@
+---
+title: Git
+description: Aide-mémoire Git – commandes, workflow et bonnes pratiques pour un usage quotidien.
+created: 2025/10/19
+tags: [Versionning, Git]
+---
+
+import TagChips from "../../../components/TagChips.astro";
+
+## <TagChips tags={frontmatter.tags} />
+
+---
+
+## Objectif
+
+Servir de **référence pratique** pour manipuler Git au quotidien : gestion des versions, branches, et intégration dans un workflow d’équipe clair.
+
+---
+
+## Contexte / Introduction
+
+Git est un système de gestion de versions distribué.  
+Il permet de suivre les modifications d’un projet, de collaborer à plusieurs et de revenir à un état antérieur du code.  
+Cette page regroupe les commandes les plus utiles et les bonnes pratiques pour un usage fluide.
+
+---
+
+## Contenu principal
+
+| Action                      | Commande                               | Exemple / Note                               |
+| --------------------------- | -------------------------------------- | -------------------------------------------- |
+| Initialiser un dépôt        | `git init`                             | Crée un dépôt local.                         |
+| Cloner un dépôt             | `git clone <url>`                      | `git clone https://github.com/user/repo.git` |
+| Vérifier l’état             | `git status`                           | Affiche les fichiers modifiés ou stagés.     |
+| Ajouter des fichiers        | `git add <fichier>`                    | `git add .` pour tout ajouter.               |
+| Valider les changements     | `git commit -m "message"`              | Message clair et concis.                     |
+| Historique                  | `git log --oneline --graph --decorate` | Vue compacte de l’historique.                |
+| Nouvelle branche            | `git branch <nom>`                     | Exemple : `git branch feature/login`.        |
+| Changer de branche          | `git switch <nom>`                     | Ancien : `git checkout <nom>`.               |
+| Fusionner une branche       | `git merge <branche>`                  | Depuis la branche cible.                     |
+| Supprimer une branche       | `git branch -d <nom>`                  | `-D` pour forcer.                            |
+| Envoyer les commits         | `git push origin <branche>`            | Vers le dépôt distant.                       |
+| Récupérer les modifications | `git pull`                             | Combine `fetch` et `merge`.                  |
+| Rebaser proprement          | `git rebase main`                      | Réécrit l’historique proprement.             |
+| Annuler un fichier stagé    | `git restore --staged <fichier>`       | Retire du stage sans perdre le contenu.      |
+| Voir les différences        | `git diff`                             | Compare avant le commit.                     |
+
+---
+
+## Exemples pratiques
+
+### Reprendre un commit oublié
+
+```bash
+git commit --amend
+```
+
+### Supprimer le dernier commit local
+
+```bash
+git reset --hard HEAD~1
+```
+
+### Ignorer certains fichiers
+
+Créer un fichier `.gitignore` à la racine :
+
+```
+node_modules/
+dist/
+.env
+.idea/
+```
+
+### Mettre à jour le dépôt distant
+
+```bash
+git fetch --all --prune
+```
+
+---
+
+## Différence entre merge et rebase
+
+Les deux servent à **intégrer les changements d’une branche dans une autre**,  
+mais le fonctionnement et le résultat dans l’historique diffèrent.
+
+### `git merge` – Intégration complète
+
+- Crée un commit de fusion (`merge commit`) reliant les deux branches.
+- Préserve la chronologie réelle des commits.
+- Plus sûr en équipe, aucun commit n’est réécrit.
+
+```bash
+git merge feature/login
+```
+
+Avantages :
+
+- Historique fidèle et complet.
+- Aucun risque de réécriture.
+
+Inconvénients :
+
+- Historique parfois encombré de merges.
+
+### `git rebase` – Réécriture linéaire
+
+- Rejoue les commits d’une branche au-dessus d’une autre.
+- L’historique devient linéaire et plus lisible.
+
+```bash
+git rebase develop
+```
+
+Avantages :
+
+- Historique clair et linéaire.
+- Idéal avant un merge ou un push final.
+
+Inconvénients :
+
+- Réécrit les commits : dangereux sur une branche partagée.
+
+### En résumé
+
+| Cas d’usage                                       | Commande conseillée     |
+| ------------------------------------------------- | ----------------------- |
+| Fusionner une feature locale avant push           | `git rebase develop`    |
+| Intégrer une feature d’un collègue                | `git merge feature/xyz` |
+| Garder un historique lisible avant livraison      | `git rebase main`       |
+| Conserver la trace réelle du travail collaboratif | `git merge`             |
+
+**Règle générale :**
+
+> Rebase avant de partager ton travail, merge après l’avoir partagé.
+
+---
+
+## Bonnes pratiques
+
+- Un commit = une modification cohérente.
+- Préfixer les messages :
+  - `feat:` nouvelle fonctionnalité
+  - `fix:` correction de bug
+  - `refactor:` amélioration interne
+  - `docs:` documentation
+  - `style:` mise en forme
+- Relire avant `push`.
+- Mettre à jour régulièrement avec `main` ou `develop`.
+- Ne pas versionner les fichiers binaires inutiles.
+
+---
+
+## Liens connexes
+
+- [Documentation officielle Git](https://git-scm.com/doc)
+- [Conventional Commits](https://www.conventionalcommits.org)
+- [Git Flow modèle](https://nvie.com/posts/a-successful-git-branching-model/)
+
+---

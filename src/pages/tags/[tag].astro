@@ -1,0 +1,53 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
+import { slugify } from '../../lib/slug';
+
+type DocEntry = CollectionEntry<'docs'>;
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs');
+  const tags = new Set<string>();
+  for (const d of docs) for (const t of d.data.tags ?? []) tags.add(slugify(t));
+  return [...tags].map((t) => ({ params: { tag: t } }));
+}
+
+const { tag } = Astro.params;
+const docs = await getCollection('docs');
+const matches = docs
+  .filter((d) => (d.data.tags ?? []).some((t) => slugify(t) === tag))
+  .sort((a, b) => a.data.title.localeCompare(b.data.title, 'fr'));
+
+const base = import.meta.env.BASE_URL || '/';
+
+/** Construit l’URL d’une page doc, même si d.slug est absent */
+const docUrl = (d: DocEntry) => {
+  const s = (d as any).slug as string | undefined;        // si dispo, on l’utilise
+  if (s && s.length) return `${base}${s.replace(/^\/|\/$/g, '')}/`;
+
+  // fallback: reconstruire depuis l'id: "docs/bdd/psql.mdx" -> "bdd/psql/"
+  const rel = d.id
+    .replace(/^docs\//, '')
+    .replace(/\/?index\.mdx?$/i, '')    // "x/index.mdx" -> "x"
+    .replace(/\.mdx?$/i, '');           // "x.mdx" -> "x"
+  return `${base}${rel.replace(/^\/|\/$/g, '')}/`;
+};
+---
+<StarlightPage frontmatter={{ title: `Tag: ${tag}` }} hasSidebar={true}>
+  <p><a href={`${base}tags/`}>&larr; Tous les tags</a></p>
+  <AnchorHeading level="2" id="pages">Pages avec « {tag} »</AnchorHeading>
+
+  {matches.length === 0 ? (
+    <p>Aucune page pour ce tag.</p>
+  ) : (
+    <ul>
+      {matches.map((d) => (
+        <li>
+          <a href={docUrl(d)}>{d.data.title}</a>
+          {d.data.description && <small> — {d.data.description}</small>}
+        </li>
+      ))}
+    </ul>
+  )}
+</StarlightPage>

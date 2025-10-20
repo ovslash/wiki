@@ -1,0 +1,79 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+const entries = await getCollection('docs');
+
+// Construit un path propre à partir de l'id (docsLoader)
+const idToPath = (id: string) => {
+  let p = id
+    .replace(/(\/)?index\.mdx?$/i, '$1')   // ".../index.mdx" -> ".../"
+    .replace(/\.(md|mdx|markdoc)$/i, '');  // retire l'extension
+  if (!p.startsWith('/')) p = '/' + p;
+  if (!p.endsWith('/')) p += '/';
+  return p;
+};
+
+// Joindre BASE_URL + path sans double slash
+const joinBase = (base: string, path: string) => {
+  const b = base.endsWith('/') ? base : base + '/';
+  const p = path.startsWith('/') ? path.slice(1) : path;
+  return (b + p).replace(/\/{2,}/g, '/');
+};
+
+// ✅ Utilise la base configurée dans astro.config ("/wiki/")
+const BASE = import.meta.env.BASE_URL ?? '/';
+
+const toUrlFromId = (id: string) => joinBase(BASE, idToPath(id));
+
+// --- dates ---
+const getUpdatedDate = (e: CollectionEntry<'docs'>) => {
+  // on priorise frontmatter lastUpdated, sinon date, sinon created
+  const d = (e.data as any).lastUpdated ?? (e.data as any).date ?? (e.data as any).created;
+  return d ? new Date(d as any) : undefined;
+};
+
+const recentModified = entries
+  .map((e) => ({ e, date: getUpdatedDate(e) }))
+  .filter((x) => !!x.date)
+  .sort((a, b) => b.date!.getTime() - a.date!.getTime())
+  .slice(0, 10);
+
+const recentCreated = entries
+  .map((e) => ({
+    e,
+    date: (e.data as any).created ? new Date((e.data as any).created) : undefined,
+  }))
+  .filter((x) => !!x.date)
+  .sort((a, b) => b.date!.getTime() - a.date!.getTime())
+  .slice(0, 10);
+---
+
+<section class="space-y-6">
+  <div>
+    <h3 class="text-xl font-semibold">Dernières pages modifiées</h3>
+    <ul class="list-disc pl-5">
+      {recentModified.length
+        ? recentModified.map(({ e, date }) => (
+            <li>
+              <a href={toUrlFromId(e.id)}>{e.data.title}</a>
+              {date && <small> — {date.toLocaleDateString('fr-FR')}</small>}
+            </li>
+          ))
+        : <li>Aucune date trouvée (ajoute `lastUpdated` en frontmatter ou vérifie l’historique Git complet).</li>}
+    </ul>
+  </div>
+
+  <div>
+    <h3 class="text-xl font-semibold">Dernières pages créées</h3>
+    <ul class="list-disc pl-5">
+      {recentCreated.length
+        ? recentCreated.map(({ e, date }) => (
+            <li>
+              <a href={toUrlFromId(e.id)}>{e.data.title}</a>
+              {date && <small> — {date.toLocaleDateString('fr-FR')}</small>}
+            </li>
+          ))
+        : <li>Ajoute un champ <code>created:</code> dans le frontmatter pour alimenter cette liste.</li>}
+    </ul>
+  </div>
+</section>

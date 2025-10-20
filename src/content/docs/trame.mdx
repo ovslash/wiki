@@ -1,0 +1,48 @@
+---
+title: Trame de Page (Light)
+description: Modèle simple et rapide pour créer une page d'aide-mémoire dans le wiki.
+tags: [template, aide-memoire, rapide]
+---
+
+import TagChips from "../../components/TagChips.astro";
+
+<TagChips tags={frontmatter.tags} />
+
+---
+
+## 🧭 À retenir
+
+- Points essentiels à se rappeler
+- Résumé rapide ou définition courte
+- Erreurs fréquentes à éviter
+
+---
+
+## ⚙️ En pratique
+
+- Étapes principales ou commandes clés
+- Mini-exemple de code ou d’utilisation
+
+```bash
+# Exemple
+commande --option
+```
+
+_(supprimer si inutile)_
+
+---
+
+## 🧩 Notes perso
+
+> Observations, astuces, retours d’expérience
+
+- …
+- …
+
+---
+
+## 🔗 Liens
+
+- [Page liée interne](../concepts/poo)
+- [Doc officielle](https://exemple.com)
+- [Ressource utile](https://exemple.com/article)

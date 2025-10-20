@@ -1,0 +1,100 @@
+---
+title: GitFlow
+description: Workflow Git standardisé pour organiser le développement, les releases et les correctifs.
+created: 2025/10/19
+tags: [Versionning, Git]
+---
+
+import TagChips from "../../../components/TagChips.astro";
+
+## <TagChips tags={frontmatter.tags} />
+
+---
+
+## Objectif
+
+Décrire une méthode de gestion de branches claire et structurée pour les projets collaboratifs basés sur Git.
+
+---
+
+## Contexte / Introduction
+
+GitFlow est un modèle d’organisation des branches.  
+Il définit un cadre logique pour gérer les développements, releases et correctifs, en séparant le travail en branches spécialisées.
+
+---
+
+## Contenu principal
+
+| Type de branche | Rôle principal                                    | Crée depuis | Fusionne vers  |
+| --------------- | ------------------------------------------------- | ----------- | -------------- |
+| **main**        | Contient le code stable et déployé en production. | —           | —              |
+| **develop**     | Sert d’intégration continue avant release.        | main        | release        |
+| **feature/**    | Développement d’une nouvelle fonctionnalité.      | develop     | develop        |
+| **fix/**        | Correction d’un bug mineur avant release.         | develop     | develop        |
+| **release/**    | Préparation d’une version stable.                 | develop     | main + develop |
+| **hotfix/**     | Correction urgente en production.                 | main        | main + develop |
+
+---
+
+## Exemples pratiques
+
+### Création d’une feature
+
+```bash
+git switch develop
+git switch -c feature/ajout-login
+# ... développement ...
+git commit -m "feat(login): ajout du formulaire"
+git switch develop
+git merge feature/ajout-login
+git branch -d feature/ajout-login
+```
+
+### Préparation d’une release
+
+```bash
+git switch -c release/1.1.0
+# ... tests et corrections ...
+git switch main
+git merge release/1.1.0
+git tag -a v1.1.0 -m "Release 1.1.0"
+git switch develop
+git merge release/1.1.0
+git branch -d release/1.1.0
+```
+
+### Hotfix en production
+
+```bash
+git switch main
+git switch -c hotfix/1.0.1
+# ... correctif ...
+git commit -m "fix: correction urgence prod"
+git switch main
+git merge hotfix/1.0.1
+git tag -a v1.0.1 -m "Hotfix 1.0.1"
+git switch develop
+git merge hotfix/1.0.1
+git branch -d hotfix/1.0.1
+```
+
+---
+
+## Bonnes pratiques
+
+- Utiliser des préfixes cohérents (`feature/`, `fix/`, `release/`, `hotfix/`).
+- Ne jamais développer directement sur `main`.
+- Toujours fusionner après validation et tests.
+- Taguer systématiquement les versions stables.
+- Supprimer les branches locales une fois fusionnées.
+- Maintenir `develop` dans un état compilable et stable.
+
+---
+
+## Liens connexes
+
+- [Article original GitFlow – nvie.com](https://nvie.com/posts/a-successful-git-branching-model/)
+- [Conventional Commits](https://www.conventionalcommits.org)
+
+---
